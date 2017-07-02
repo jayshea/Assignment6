@@ -1,0 +1,221 @@
+---
+title: "Assignment 6"
+author: "Jacintha Johnson"
+date: "07/02/2017"
+output: github_document
+---
+## Hello Octocat
+I love Octocat. She's the coolest cat in town.
+
+![](octocat.png)
+
+```{r quick_look, echo=TRUE}
+data("anscombe")
+dim.data.frame(anscombe)
+colnames(anscombe)
+head(anscombe)
+tail(anscombe)
+summary(anscombe)
+```
+
+
+
+```{r xy_plot, echo=FALSE, fig.align='center', fig.height=8, fig.width=8, dev = 'png', fig.path='figure/'}
+data("anscombe") 
+with(anscombe, plot(x1, y1))
+abline(lm(y1 ~ x1, data = anscombe))
+```
+```{r data_import, echo=TRUE}
+
+#import readr package
+library(readr)
+
+#read the csv file
+analgesic <- read_csv("https://dl.dropboxusercontent.com/u/11805474/painblogr/biostats/assignments/analgesic.csv")
+
+data.frame(analgesic)
+
+#saving the data from analgecis to df
+df <- data.frame(analgesic)
+print(df)
+```
+
+```{r data_summary, echo=TRUE}
+
+#dimensions of the data set
+dim.data.frame(df)
+
+#summary stastistics of each column
+summary(df)
+
+#first six lines of the data set
+head(df)
+
+#last six lines of the data set
+tail(df)
+
+```
+
+```{r data_tidy, echo=TRUE}
+
+#importing packages
+library(dplyr)
+library(tidyr)
+library(forcats)
+
+alt_data <- df %>%
+#tidy df from wide format to long format
+gather(key =  Measurements,
+       value = Results, 
+       Measurement_1:Measurement_3) %>%
+#grouping table by ID  
+group_by(ID) %>%
+
+#summmarize data according to mean across measurements of each individual
+summarise(Mean = mean(Results)) %>%
+
+#display the data
+print(alt_data)
+
+
+
+```
+
+```{r data_import2, echo=TRUE}
+
+#import packages
+library(readr)
+library(tidyr)
+library(dplyr)
+library(graphics)
+library(grDevices)
+
+#read the csv file
+chicken <- read_csv("https://dl.dropboxusercontent.com/u/11805474/painblogr/biostats/assignments/chick-weights.csv?dl=1")
+
+
+chick_alt_data <- chicken %>%
+  
+#group the data by feed
+group_by(feed) %>%
+  
+#summmarize data
+summarise(Mean = mean(weight))
+
+print(chick_alt_data)
+
+
+# One-way ANOVA
+chicktest<- aov(weight ~ feed,
+           data = chicken)
+
+summary(chicktest)
+
+#plot box plot
+boxplot(weight ~ feed, data = chicken)
+
+
+#null hypothesis: All feeds result in same growth rate
+#alternative hypothesis: sunflower feed chickens had the greatest growth rate
+#Test: Kruskal-Wallis test
+#assumptions:errors are independent, data are unmatched, samples are drawn from populations with same shape distributions
+#outcome interpretation:p is less than 0.05 therefore reject null hypothesis.
+```
+
+```{r data_import3, echo=TRUE}
+#import packages
+library(readr)
+library(tidyr)
+library(dplyr)
+library(graphics)
+library(grDevices)
+
+#read the csv file
+hot_zone_x <- read_csv("https://dl.dropboxusercontent.com/u/11805474/painblogr/biostats/assignments/gastroenteritis.csv?dl=1")
+
+hot_zone_y <- xtabs(~Consumption + Outcome, data = hot_zone_x)
+head(hot_zone_x)
+
+table(hot_zone_x$Consumption, hot_zone_x$Outcome)
+
+#plot data
+barplot(hot_zone_y , beside = TRUE, ylab = 'consumption', xlab= 'clinical presentation', main = 'Outbreak of severe gastroenteritis from water contamination', col= c("red", "orange", "yellow"))
+
+legend('top', c("<1 glasses/day", ">4 glasses/day", "1 to 4 glasses/day"), fill = c("orange", "yellow", "red"))
+
+#statistical test
+hot_zone_z <- chisq.test(hot_zone_y, correct = TRUE)
+hot_zone_z
+
+#null hypothesis: outbreak not caused by the contaminated drinking water
+#alternative hypothesis: outbreak is caused by the contimanated drinking water
+#test: chi square
+#assumptions: - 3 categorical variables from the same population of data
+#interpretation:p value is less than 0.05 therefore reject the null hypothesis
+```
+
+```{r data_import4, echo=TRUE}
+#import packages
+library(readr)
+library(tidyr)
+library(dplyr)
+library(graphics)
+library(grDevices)
+
+#read the csv file
+nausea <- read_csv("https://dl.dropboxusercontent.com/u/11805474/painblogr/biostats/assignments/nausea.csv?dl=1")
+
+  
+nausea[8,3]= 4
+nausea
+
+# plot a grah
+plot(nausea$Nausea_before ~ nausea$Patient, type = "l", ylim = c(0,6), xlab = 'patient', ylab = 'nausea rating', col = 'red', main = 'rating of nausea before and after receiving chemotherapy')
+
+lines(nausea$Nausea_after, col = 'blue')
+legend("center", c("Nausea_before", "Nausea_after"), fill = c("red", "blue"))
+
+#statistical test
+wilcox.test(nausea$Nausea_before,nausea$Nausea_after, paired = TRUE)
+
+#null hypothesis: 5HT3-receptor blocker led to nausea
+#alternative hypothesis:5HT3-receptor blocker did not lead to nausea
+#assumption: data is non-parametric
+#outcome interpretation:p-value is less than 0.05 therefore we reject the null hgypothesis. 
+```
+
+```{r data_analysis, echo=TRUE}
+library(ggplot2)
+
+#null hypothesis: The housing price independnat of the interest rate
+#alternative hypothesis: The housing prive is dependant on the interest rate
+
+house_price <- read.csv("https://dl.dropboxusercontent.com/u/11805474/painblogr/biostats/assignments/housing-prices.csv?dl=1")
+
+data(house_price)
+
+print(house_price)
+
+# Plotting the input data
+plot (house_price$interest_rate,house_price$median_house_price_USD, main = 'The effect of interest rate on house price', xlab = "Interest Rate", ylab = "Median House Price", pch = 19, col = "red", fill = c("red"))
+abline(lm(house_price$median_house_price_USD~house_price$interest_rate, data = house_price), lwd = 3, col = "black" )
+
+# Calculating linear regression
+ln_house <- lm(house_price$median_house_price_USD~house_price$interest_rate, data = house_price)
+summary (ln_house)
+
+# Diagnostic 1: Gaussian Residual Distribution
+qqnorm(ln_house$residuals, pch = 19, col = "blue")
+qqline(ln_house$residuals, lwd = 3, col = "pink")
+
+# Diagnostic 2: Homoskedasticity
+plot(x= ln_house$fitted.values, y=ln_house$residuals, xlab = "Values", ylab = "Residuals", pch = 19, col = "red", main = "Homoskedasticity")
+abline(h=0, lwd = 3, col = "orange")
+
+# Plot generalized linear model
+glm(house_price$median_house_price_USD~house_price$interest_rate, data = house_price)
+
+# interpretations: p-value < 0.05 therefore reject null hypothesis.
+
+
+```
